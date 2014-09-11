@@ -9,6 +9,7 @@
 
 		Branch into single object version
 */
+
 requirejs.config({
 	shim : {
 		"extensions/com-itelligence-bulletchart-d3/itelligence-bulletchart-d3-bullet-lib" : {
@@ -45,7 +46,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		},
 		paint : function($element, layout) { 
 			runCount = runCount+1;
-			log('start paint 3');
+			log('paint count: '+runCount);
 			log(layout);
 			
 			// color palette from Patrik Lundblad
@@ -73,17 +74,15 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			$element.html("");
 			
 			var count = 0;
-			var salt = Math.round( Math.random() *10000);
 			var datastring = []; //'[\n';
 			var qData = layout.qHyperCube.qDataPages[0];
 			var qMeasures = layout.qHyperCube.qMeasureInfo;
 			// log(qMeasures);
 			// do we have dimensions?
-			var dimFlag = layout.qHyperCube.qDimensionInfo.length;
+			var dimFlag = 0; //layout.qHyperCube.qDimensionInfo.length;
 			 
 			var vizArray = [];
 			var colorArray = [];
-			var scale  =-1;
 
 			$.each(qMeasures, function(key, row) {
 				//get type of viz
@@ -100,7 +99,8 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 
 				// log loop into rows
 				$.each(row, function(index, cell) {
-				// log(index);
+					
+					// set the label
 					label = disclosureLabelText(  layout.qDef['Label'] ,$element.width(),layout.qDef['Label'].length);
 					sublabel = disclosureLabelText(  layout.qDef['SubLabel'] ,$element.width(),layout.qDef['SubLabel'].length );
 
@@ -110,39 +110,32 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 						dimFlag = 0;
 					}
 
-						
 					if(!isNaN(cell.qNum)) {
-
 						valueArray.push(cell.qNum);
 					}						
 				//	});	
 				});
-				
-
-				scale = Math.max(scale,valueArray[0],valueArray[1],valueArray[2])
 
 				if (typeof valueArray[2] === 'undefined') {
 				// get the highest value to create background chart area 
-				valueArray[2] = ((valueArray[0]>valueArray[1]) ? valueArray[0] : valueArray[1]);
+//				valueArray[2] = ((valueArray[0]>valueArray[1]) ? valueArray[0] : valueArray[1]);
 				}
 				// check if we need to add a , to seperate data arrays
 				// create data array
 				var dataPairs = { "title":label,"subtitle":sublabel,"ranges":[0],"measures":[0],"markers":[0] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
 
-//				var dataPairs = { "title":label,"ranges":[0],"measures":[0],"markers":[0] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
-
-
 				// insert values into array
 				var valueLength = valueArray.length;
 				for (var i = 0; i < valueLength; i++) {
 				    if(vizArray[i]==='m') {
-						dataPairs["measures"].push(valueArray[i])
+						dataPairs["measures"].push(Math.abs( valueArray[i]))
+//						dataPairs["measures"].push(valueArray[i])
 				    }
 				    if(vizArray[i]==='t') {
-						dataPairs["markers"].push(valueArray[i])
+						dataPairs["markers"].push(Math.abs( valueArray[i]))
 				    }
 				    if(vizArray[i]==='b') {
-						dataPairs["ranges"].push(valueArray[i])
+						dataPairs["ranges"].push(Math.abs( valueArray[i]))
 				    }
 				}
 				//log(dataPairs);
@@ -151,7 +144,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				count = count+1;	
 				
 			});
-		log (scale);
+		log (datastring );
 //		datastring += ']';
 
 }
@@ -173,15 +166,16 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 
 	    var divHeight = $element.height();
 	    var divWidth = $element.width();
-	    var divMarginLabel = disclosureLabelWidth(divWidth,dimFlag);
+	    var divMarginLabel = disclosureLabelWidth(divWidth,1);
 	    var divMarginRight = disclosureRightMargin(divWidth);
 	    var divMarginText = ''; 
-	    var elementHeight = (divHeight/dimensions)*0.95;
+	    var elementHeight = (divHeight)*0.95;
 	    var elementRelativeMargin = 25;
 	    var elementRelativeHeight = 25;
 	    var marginTop = (elementHeight*0.1) ;
-	    var marginBottom = disclosureLegendHeight(elementHeight*0.3);
+	    var marginBottom = disclosureLegendHeight(elementHeight);
 	    // log('h:'+divHeight+' w:'+divWidth +' eh:'+elementHeight);
+
 
 	    var titleFontSize = disclosureFontSize(elementHeight);
 
@@ -191,10 +185,14 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		    height = elementHeight - marginTop - marginBottom;
 		//log('mt:'+marginTop +' mb:'+ marginBottom+' h:'+height);
 
+	    log( elementHeight +':'+ marginTop +':'+ marginBottom +':'+elementHeight+':'+ $element.height());
+	    log(height);
+
+
 		var chart = d3.bullet()
 		    .width(width)
 		    .height(height);
-
+		    
 		var w = $element.width(), h = $element.height();
 
 		var svg = d3.select($element[0]).selectAll("svg")
@@ -203,6 +201,10 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		      .attr("class", "bullet")
 		      .attr("width", width + divMarginLabel + divMarginRight)
 		      .attr("height", height + marginTop + marginBottom)
+		      .attr("class", "axis")
+		     // .attr("tickCount", 6)
+		      //disclosureTickCount(divWidth))
+		      
 //		      .attr("width", width + divMarginLabel + divMarginRight)
 //		      .attr("height", height + marginTop + marginBottom)			
 		    .append("g")
@@ -229,11 +231,10 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 
 		log('Runs: '+runCount);
 
-		
-		// hide dummy row
-		$("line.marker.s1").css("display","none");
+
 		// set colors
-//		$("rect.range.s0").css("fill","red");
+//		if( measure is empty)
+//		$("line.marker.s0").css("display","none");
 //		$("rect.measure.s0").css("fill","red");
 //		$(".marker").css("stroke","red");
 		var range = 0;
@@ -340,6 +341,10 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			}
 			return height;
 		}
+		function disclosureTickCount(divWidth) {
+				var ticks = Math.round(divWidth/50);
+				return ticks>10 ? 10:ticks;
+			};	 
 
 		function randomize(d) {
 			  if (!d.randomizer) d.randomizer = randomizer(d);
