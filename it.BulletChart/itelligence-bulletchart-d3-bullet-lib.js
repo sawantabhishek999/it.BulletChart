@@ -6,7 +6,7 @@
 d3.bullet = function() {
   var orient = "left", // TODO top & bottom
       reverse = false,
-      duration = 1000,
+      duration = 500,
       ranges = bulletRanges,
       markers = bulletMarkers,
       measures = bulletMeasures,
@@ -111,7 +111,7 @@ d3.bullet = function() {
 
       // Update the tick groups.
       var tick = g.selectAll("g.tick")
-          .data(x1.ticks(8), function(d) {
+          .data(x1.ticks(tickCount), function(d) {
             return this.textContent || format(d);
           });
 
@@ -200,7 +200,11 @@ d3.bullet = function() {
     height = x;
     return bullet;
   };
-
+  bullet.tickCount = function(x) {
+    if (!arguments.length) return tickFormat;
+    tickCount = x;
+    return bullet;
+  };
   bullet.tickFormat = function(x) {
     if (!arguments.length) return tickFormat;
     tickFormat = x;

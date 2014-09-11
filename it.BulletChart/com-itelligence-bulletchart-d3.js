@@ -31,8 +31,8 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				qDimensions : [],
 				qMeasures : [],
 				qInitialDataFetch : [{
-					qWidth : 3,
-					qHeight : 5
+					qWidth : 6,
+					qHeight : 6
 				}]
 			},
 			fontSize : {
@@ -45,8 +45,8 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		},
 		paint : function($element, layout) { 
 			runCount = runCount+1;
-			log('start paint 3');
-			log(layout);
+			log('paint '+runCount);
+			//log(layout);
 			
 			// color palette from Patrik Lundblad
 			var palette = [
@@ -130,8 +130,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				var dataPairs = { "title":label,"subtitle":sublabel,"ranges":[0],"measures":[0],"markers":[0] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
 
 //				var dataPairs = { "title":label,"ranges":[0],"measures":[0],"markers":[0] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
-
-
+				
 				// insert values into array
 				var valueLength = valueArray.length;
 				for (var i = 0; i < valueLength; i++) {
@@ -140,7 +139,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				    }
 				    if(vizArray[i]==='t') {
 						dataPairs["markers"].push(valueArray[i])
-				    }
+					}
 				    if(vizArray[i]==='b') {
 						dataPairs["ranges"].push(valueArray[i])
 				    }
@@ -151,8 +150,6 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				count = count+1;	
 				
 			});
-		log (scale);
-//		datastring += ']';
 
 }
 		// required markers (,"markers":[2100]),ranges (,"ranges":[1400,2500])
@@ -168,7 +165,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			; */
 
 		var data = datastring;
-	    log(data);
+//	    log(data);
 
 
 	    var divHeight = $element.height();
@@ -176,14 +173,12 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 	    var divMarginLabel = disclosureLabelWidth(divWidth,dimFlag);
 	    var divMarginRight = disclosureRightMargin(divWidth);
 	    var divMarginText = ''; 
-	    var elementHeight = (divHeight/dimensions)*0.95;
+	    var elementHeight = (divHeight)*0.95;
 	    var elementRelativeMargin = 25;
 	    var elementRelativeHeight = 25;
 	    var marginTop = (elementHeight*0.1) ;
 	    var marginBottom = disclosureLegendHeight(elementHeight*0.3);
 	    // log('h:'+divHeight+' w:'+divWidth +' eh:'+elementHeight);
-
-	    var titleFontSize = disclosureFontSize(elementHeight);
 
 		var margin = {top: 5, right: 40, bottom: 20, left: 120},
 		    width = $element.width() - divMarginLabel - divMarginRight,
@@ -193,7 +188,8 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 
 		var chart = d3.bullet()
 		    .width(width)
-		    .height(height);
+		    .height(height)
+		    .tickCount( disclosureTick(width,1) );
 
 		var w = $element.width(), h = $element.height();
 
@@ -219,19 +215,18 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		      .attr("class", "title")
 		      //.fontSize('8px')
 		      //.style("font-size", function(d) {	return d.size + "px";
-		      .style("font-size", titleFontSize )
+		      .style("font-size",  disclosureFontSize(elementHeight)+"px" )
 		      .text(function(d) { return d.title; });
 
 		title.append("text")
 		      .attr("class", "subtitle")
 		      .attr("dy", "1em")
+		      .style("font-size",  (disclosureFontSize(elementHeight)-2)+"px" )
 		      .text(function(d) { return d.subtitle; });
 
 		log('Runs: '+runCount);
 
 		
-		// hide dummy row
-		$("line.marker.s1").css("display","none");
 		// set colors
 //		$("rect.range.s0").css("fill","red");
 //		$("rect.measure.s0").css("fill","red");
@@ -253,7 +248,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		    if(vizArray[i]==='t') {
 				$("line.marker.s"+marker).css("stroke",colorShow);
 				marker++;
-			   log(i + ' t '+ vizArray[i] + ' - '+colorShow);
+			   //log(i + ' t '+ vizArray[i] + ' - '+colorShow);
 		    }
 		    if(vizArray[i]==='b') {
 				$("rect.range.s"+range).css("fill",colorShow);
@@ -261,15 +256,21 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			//    log(i + ' b '+ vizArray[i] + ' - '+colorShow);
 		    }
 		}
+		// hide dummy row
+		$("line.marker.s"+marker).css("display","none");
+
 	// disclosure functions 	
 		// adjust title 
 		function disclosureFontSize (elementHeight) {
-			var size = "14px";
-			if (elementHeight>=23 & elementHeight<=30) {
-				size = Math.round(elementHeight)-17+"px";
+			var size = 14;
+			if (elementHeight>60) {
+				size = 16;
 			} 
-			if (elementHeight<22) {
-					size = "8px";
+			if (elementHeight>=20 & elementHeight<=60) {
+				size = Math.round(elementHeight*0.1);
+			} 
+			if (elementHeight<20) {
+					size = 8;
 			}
 			//log(size+' '+elementHeight);
 			return size;
@@ -282,8 +283,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 /*			if( noDimension()===true){
 				return label;
 			} */
-//			log(divWidth);
-//			log('ll '+dimLabel.length*letterLength);
+
 			if(divWidth>=400 ) {
 				label = dimLabel;
 			} else if( dimLabel.length*letterLength<=400) {
@@ -301,6 +301,20 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			}
 
 			return label;
+		}
+
+		function disclosureTick(divWidth,dimFlag) {
+			var ticks = 3;
+			if( dimFlag===0 ) {
+				return ticks;
+			}
+			if( divWidth<=500) {
+				ticks = Math.ceil(divWidth/100);
+			} else if (divWidth>=500){	
+				ticks = 8;
+			}
+			log('ticks:'+ticks);
+			return ticks;
 		}
 
 		function disclosureLabelWidth(divWidth,dimFlag) {

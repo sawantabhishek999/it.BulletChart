@@ -45,9 +45,6 @@ define( [], function () {
 					}
 				}
 			},
-			sorting: {
-				uses: "sorting"
-			},
 			settings: {
 				uses: "settings",
 				items: {
