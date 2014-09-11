@@ -1,0 +1,9 @@
+{
+	"name" : "it.Bullet Chart",
+	"description" : "Bullet Chart from itelligence nordic",
+	"icon" : "bar-chart-vertical",
+	"type" : "visualization",
+	"version": "1.0",
+	"preview" : "bar",
+	"author": "Torben Seebach itelligence Nordic"
+}
