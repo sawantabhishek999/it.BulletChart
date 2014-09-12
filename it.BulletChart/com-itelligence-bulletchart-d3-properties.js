@@ -62,20 +62,30 @@ define( [], function () {
 								ref: "fontSize.max",
 								translation: "Max Font Size",
 								type: "number",
-								defaultValue: 24
+								defaultValue: 16
 							}
 						}
+					},
+				customProp3: {
+						ref: "qDef.MaxValue",
+						label: "Maximum Value",
+						//component: "bo",
+						expression:"optional",						
+						type: "string",
+						defaultValue: ""
 					},
 				customProp: {
 						ref: "qDef.Label",
 						label: "Label",
 						//component: "bo",
+						expression:"optional",
 						type: "string",
 						defaultValue: ""
 					},
 				customProp2: {
 						ref: "qDef.SubLabel",
 						label: "Sub Label",
+						expression:"optional",
 						//component: "bo",
 						type: "string",
 						defaultValue: ""

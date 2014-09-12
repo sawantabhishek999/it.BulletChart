@@ -1,13 +1,10 @@
 /*globals define, console*/
 /*
 	ToDo:
-		labels in dimension centered
-		minsize display handling (scrollbar?)
+		labels in dimension centered, if there is no sublabel
 		Show multiple diemensions
-		change display type base on custom setting
-		set max barsize
-
-		Branch into single object version
+		Animate after selections 
+		add a max value
 */
 requirejs.config({
 	shim : {
@@ -46,7 +43,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		paint : function($element, layout) { 
 			runCount = runCount+1;
 			log('paint '+runCount);
-			//log(layout);
+			log(layout);
 			
 			// color palette from Patrik Lundblad
 			var palette = [
@@ -72,6 +69,12 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			// || layout.qHyperCube.qDataPages[0].qMatrix.length) {	
 			$element.html("");
 			
+			var maxFont = layout.fontSize.max;
+			var minFont = layout.fontSize.min;
+
+			// get id object id, to use in css classes
+			var qId = layout.qInfo.qId;
+
 			var count = 0;
 			var salt = Math.round( Math.random() *10000);
 			var datastring = []; //'[\n';
@@ -97,12 +100,15 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 
 				var label = '';
 				var sublabel = '';				
-
+				var maxValue = 0;
 				// log loop into rows
 				$.each(row, function(index, cell) {
 				// log(index);
-					label = disclosureLabelText(  layout.qDef['Label'] ,$element.width(),layout.qDef['Label'].length);
-					sublabel = disclosureLabelText(  layout.qDef['SubLabel'] ,$element.width(),layout.qDef['SubLabel'].length );
+					label = disclosureLabelText(  layout.qDef['Label'] ,$element.width(),layout.qDef['Label'].length,disclosureFontSize(elementHeight,minFont,maxFont));
+					sublabel = disclosureLabelText(  layout.qDef['SubLabel'] ,$element.width(),layout.qDef['SubLabel'].length ,disclosureFontSize(elementHeight,minFont,maxFont));
+					maxValue = layout.qDef['MaxValue'] ;
+
+					log(maxValue);
 
 					if( label.length>3 || sublabel.length>3) {
 						dimFlag = 1;
@@ -127,7 +133,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				}
 				// check if we need to add a , to seperate data arrays
 				// create data array
-				var dataPairs = { "title":label,"subtitle":sublabel,"ranges":[0],"measures":[0],"markers":[0] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
+				var dataPairs = { "title":label,"subtitle":sublabel,"ranges":[0],"measures":[0],"markers":[maxValue] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
 
 //				var dataPairs = { "title":label,"ranges":[0],"measures":[0],"markers":[0] }; //,"measures":{valueArray[0]},"markers":{valueArray[1]} };
 				
@@ -189,6 +195,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		var chart = d3.bullet()
 		    .width(width)
 		    .height(height)
+		    .qId(qId)
 		    .tickCount( disclosureTick(width,1) );
 
 		var w = $element.width(), h = $element.height();
@@ -215,16 +222,14 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		      .attr("class", "title")
 		      //.fontSize('8px')
 		      //.style("font-size", function(d) {	return d.size + "px";
-		      .style("font-size",  disclosureFontSize(elementHeight)+"px" )
+		      .style("font-size",  disclosureFontSize(elementHeight,minFont,maxFont)+"px" )
 		      .text(function(d) { return d.title; });
 
 		title.append("text")
 		      .attr("class", "subtitle")
 		      .attr("dy", "1em")
-		      .style("font-size",  (disclosureFontSize(elementHeight)-2)+"px" )
+		      .style("font-size",  disclosureFontSize(elementHeight-2,minFont,maxFont)+"px" )
 		      .text(function(d) { return d.subtitle; });
-
-		log('Runs: '+runCount);
 
 		
 		// set colors
@@ -241,65 +246,70 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		    var colorShow = palette[colorArray[i]];
 			
 		    if(vizArray[i]==='m') {
-				$("rect.measure.s"+measure).css("fill",colorShow);
+				$("rect.measure.s"+measure+'-'+qId).css("fill",colorShow);
 				measure++;
 			//    log(i + ' m '+ vizArray[i] + ' - '+colorShow);
 		    }
 		    if(vizArray[i]==='t') {
-				$("line.marker.s"+marker).css("stroke",colorShow);
+				$("line.marker.s"+marker+'-'+qId).css("stroke",colorShow);
 				marker++;
 			   //log(i + ' t '+ vizArray[i] + ' - '+colorShow);
 		    }
 		    if(vizArray[i]==='b') {
-				$("rect.range.s"+range).css("fill",colorShow);
+				$("rect.range.s"+range+'-'+qId).css("fill",colorShow);
 				range++;
 			//    log(i + ' b '+ vizArray[i] + ' - '+colorShow);
 		    }
 		}
 		// hide dummy row
-		$("line.marker.s"+marker).css("display","none");
+		$("line.marker.s"+marker+'-'+qId).css("display","none");
 
 	// disclosure functions 	
 		// adjust title 
-		function disclosureFontSize (elementHeight) {
-			var size = 14;
-			if (elementHeight>60) {
-				size = 16;
+		function disclosureFontSize (elementHeight,minFont,maxFont) {
+			var size = maxFont;
+			if (elementHeight>80) {
+				size = maxFont;
 			} 
-			if (elementHeight>=20 & elementHeight<=60) {
-				size = Math.round(elementHeight*0.1);
+			if (elementHeight>=20 & elementHeight<=80) {
+
+				size = Math.round( (elementHeight/80)*maxFont);
+
 			} 
 			if (elementHeight<20) {
-					size = 8;
+					size = minFont;
 			}
 			//log(size+' '+elementHeight);
+			size = size<minFont ? minFont : size;
+
 			return size;
 		} 
 	
 
-		function disclosureLabelText(dimLabel,divWidth,dimFlag) {
+		function disclosureLabelText(dimLabel,divWidth,dimFlag,fontSize) {
 			var label = '';
-			var letterLength = 8;
+			var letterLength = Math.round(fontSize/2);
 /*			if( noDimension()===true){
 				return label;
 			} */
+//				log(letterLength);
+			if(divWidth<=100 ) {
+				label = '';''
+			} else 
 
-			if(divWidth>=400 ) {
+			if (dimLabel.length*letterLength >= disclosureLabelWidth(divWidth,dimFlag) ) {
+				if(dimLabel.length <1 ) 
+				{			
+				 label = '';
+				 } else {
+				// determine how many letters to cut, add 3 to total because of dots..
+							var letters = 3+Math.floor(((dimLabel.length*letterLength)-disclosureLabelWidth(divWidth))/letterLength);
+			//					log('letters '+letters);
+							label =  dimLabel.slice( 0,dimLabel.length-letters )+'...';
+			}			} else {
 				label = dimLabel;
-			} else if( dimLabel.length*letterLength<=400) {
-				// log(((dimLabel.length*5)-divWidth)/5);
-				if (dimLabel.length*letterLength >= disclosureLabelWidth(divWidth,dimFlag) ) {
-					// determine how many letters to cut, add 3 to total because of dots..
-					var letters = 3+Math.floor(((dimLabel.length*letterLength)-disclosureLabelWidth(divWidth))/letterLength);
-//					log('letters '+letters);
-					label =  dimLabel.slice( 0,dimLabel.length-letters )+'...';
-				} else {
-					label = dimLabel;
-				}
-			} else if(divWidth<=100) {
-				// no label;
-			}
-
+			} 
+		
 			return label;
 		}
 
@@ -309,11 +319,11 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				return ticks;
 			}
 			if( divWidth<=500) {
-				ticks = Math.ceil(divWidth/100);
+				ticks = Math.ceil(divWidth/120);
 			} else if (divWidth>=500){	
 				ticks = 8;
 			}
-			log('ticks:'+ticks);
+//			log('ticks:'+ticks);
 			return ticks;
 		}
 

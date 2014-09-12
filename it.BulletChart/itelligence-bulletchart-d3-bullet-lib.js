@@ -6,13 +6,14 @@
 d3.bullet = function() {
   var orient = "left", // TODO top & bottom
       reverse = false,
-      duration = 500,
+      duration = 0,
       ranges = bulletRanges,
       markers = bulletMarkers,
       measures = bulletMeasures,
       width = 380,
-      tickCount = 8,
       height = 30,
+      tickCount = 8,
+      qId = 'xxx',
       tickFormat = null
       ;
 
@@ -46,7 +47,7 @@ d3.bullet = function() {
           .data(rangez);
 
       range.enter().append("rect")
-          .attr("class", function(d, i) { return "range s" + i; })
+          .attr("class", function(d, i) { return "range s" + i+'-'+qId; })
           .attr("width", w0)
           .attr("height", height)
           .attr("x", reverse ? x0 : 0)
@@ -66,7 +67,7 @@ d3.bullet = function() {
           .data(measurez);
 
       measure.enter().append("rect")
-          .attr("class", function(d, i) { return "measure s" + i; })
+          .attr("class", function(d, i) { return "measure s" + i+'-'+qId; })
           .attr("width", w0)
           .attr("height", height / 3)
           .attr("x", reverse ? x0 : 0)
@@ -89,7 +90,7 @@ d3.bullet = function() {
 
       marker.enter().append("line")
 //          .attr("class", "marker")
-          .attr("class", function(d, i) { return "marker s" + i; })
+          .attr("class", function(d, i) { return "marker s" + i+'-'+qId; })
           .attr("x1", x0)
           .attr("x2", x0)
           .attr("y1", height / 6)
@@ -210,6 +211,12 @@ d3.bullet = function() {
     tickFormat = x;
     return bullet;
   };
+  bullet.qId = function(x) {
+    if (!arguments.length) return qId;
+    qId = x;
+    return bullet;
+  };
+
 
   bullet.duration = function(x) {
     if (!arguments.length) return duration;
