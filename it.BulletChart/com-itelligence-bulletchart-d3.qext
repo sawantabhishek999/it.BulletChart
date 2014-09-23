@@ -1,9 +1,9 @@
 {
-	"name" : "it.Bullet Chart",
-	"description" : "Bullet Chart from itelligence nordic",
+	"name" : "it.bulletChart",
+	"description" : "Stephen Few like Bullet Chart from itelligence nordic",
 	"icon" : "bar-chart-vertical",
+	"preview": "preview.png",
 	"type" : "visualization",
 	"version": "1.0",
-	"preview" : "bar",
 	"author": "Torben Seebach itelligence Nordic"
 }
