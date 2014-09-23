@@ -380,7 +380,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			};	 
 		 // i use this logging function so its easy to turn logging on or off
 		 function log(obj) {
-				  console.log(obj);
+//				  console.log(obj);
 //				  dump(obj);
 			};
 //
