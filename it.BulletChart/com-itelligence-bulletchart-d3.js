@@ -182,6 +182,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		} else {
 			console.log('no old data');
 			console.log(datastring);
+			var data_init = datastring;
 		}
 		data_old = datastring;
 
