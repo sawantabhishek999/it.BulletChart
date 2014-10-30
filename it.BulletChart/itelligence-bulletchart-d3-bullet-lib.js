@@ -195,7 +195,6 @@ d3.bullet = function() {
     width = x;
     return bullet;
   };
-
   bullet.height = function(x) {
     if (!arguments.length) return height;
     height = x;
@@ -221,6 +220,7 @@ d3.bullet = function() {
   bullet.duration = function(x) {
     if (!arguments.length) return duration;
     duration = x;
+    console.log(duration);
     return bullet;
   };
 

@@ -16,7 +16,7 @@ requirejs.config({
 define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-properties", "./itelligence-bulletchart-d3-bullet-lib"], function($, cssProperties,properties) {
 	'use strict';$("<style>").html(cssProperties).appendTo("head");
 	var runCount = 0;
-
+	var data_old = [];
 	return {
 		type : "BulletChart",
 		//Refer to the properties file
@@ -64,7 +64,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 
 //			d3.select($element[0]).append("p").text("loading");
 			//check that we have data to render
-			if(layout.qHyperCube.qDataPages[0].qMatrix.length>=1 ) { 
+			if(layout.qHyperCube.qDataPages[0].qMatrix.length>=1 ) {
 			var dimensions = layout.qHyperCube.qDataPages[0].qMatrix.length;	
 			// || layout.qHyperCube.qDataPages[0].qMatrix.length) {	
 			$element.html("");
@@ -157,7 +157,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				
 			});
 
-}
+
 		// required markers (,"markers":[2100]),ranges (,"ranges":[1400,2500])
 		// optional subtitle ("subtitle":"US$, in thousands")
 /*		var data2=[
@@ -170,9 +170,22 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 				]
 			; */
 
-		var data = datastring;
-//	    log(data);
+		
 
+		//var data_init = [];
+		// test if the old data exist
+		// we expect old data to be an array
+		if (data_old instanceof Array) {
+			console.log('data old');
+			console.log(data_old);
+			var data_init = data_old;	
+		} else {
+			console.log('no old data');
+			console.log(datastring);
+		}
+		data_old = datastring;
+
+//	    log(datastring);
 
 	    var divHeight = $element.height();
 	    var divWidth = $element.width();
@@ -195,74 +208,126 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 		var chart = d3.bullet()
 		    .width(width)
 		    .height(height)
+		    .duration(0)
 		    .qId(qId)
 		    .tickCount( disclosureTick(width,1) );
 
 		var w = $element.width(), h = $element.height();
 
-		var svg = d3.select($element[0]).selectAll("svg")
-		      .data(data)
-		    .enter().append("svg")
-		      .attr("class", "bullet")
-		      .attr("width", width + divMarginLabel + divMarginRight)
-		      .attr("height", height + marginTop + marginBottom)
-//		      .attr("width", width + divMarginLabel + divMarginRight)
-//		      .attr("height", height + marginTop + marginBottom)			
-		    .append("g")
-		      .attr("transform", "translate(" + divMarginLabel + "," + marginTop + ")")
-		     // .transition()
-		      .call(chart);
+		//	var data = datastring;
+log('render 1');
+// log(chart.duration( 500));
+			var svg = d3.select($element[0]).selectAll("svg")
+			      .data(data_init)
+			    .enter().append("svg")
+			      .attr("class", "bullet")
+			      .attr("width", width + divMarginLabel + divMarginRight)
+			      .attr("height", height + marginTop + marginBottom)
+	//		      .attr("duration", 0)
+	//		      .attr("width", width + divMarginLabel + divMarginRight)
+	//		      .attr("height", height + marginTop + marginBottom)			
+			    .append("g")
+			      .attr("transform", "translate(" + divMarginLabel + "," + marginTop + ")")
+			     // .transition()
+			      .call(chart)
+			     // .duration( 500)
+			     .call(chart.duration(500))
+			      .data(datastring)
+			      .call(chart)
+			      ;
 
 
-		var title = svg.append("g")
-		      .style("text-anchor", "end")
-		      .attr("transform", "translate(-6," + height / 2 + ")");
+			var title = svg.append("g")
+			      .style("text-anchor", "end")
+			      .attr("transform", "translate(-6," + height / 2 + ")");
 
-		title.append("text")
-		      .attr("class", "title")
-		      //.fontSize('8px')
-		      //.style("font-size", function(d) {	return d.size + "px";
-		      .style("font-size",  disclosureFontSize(elementHeight,minFont,maxFont)+"px" )
-		      .text(function(d) { return d.title; });
+			title.append("text")
+			      .attr("class", "title")
+			      //.fontSize('8px')
+			      //.style("font-size", function(d) {	return d.size + "px";
+			      .style("font-size",  disclosureFontSize(elementHeight,minFont,maxFont)+"px" )
+			      .text(function(d) { return d.title; });
 
-		title.append("text")
-		      .attr("class", "subtitle")
-		      .attr("dy", "1em")
-		      .style("font-size",  disclosureFontSize(elementHeight-2,minFont,maxFont)+"px" )
-		      .text(function(d) { return d.subtitle; });
-
+			title.append("text")
+			      .attr("class", "subtitle")
+			      .attr("dy", "1em")
+			      .style("font-size",  disclosureFontSize(elementHeight-2,minFont,maxFont)+"px" )
+			      .text(function(d) { return d.subtitle; });
 		
 		// set colors
 //		$("rect.range.s0").css("fill","red");
 //		$("rect.measure.s0").css("fill","red");
 //		$(".marker").css("stroke","red");
-		var range = 0;
-		var marker = 0;
-		var measure = 0;
-		var colorShow = '';
-
-		var vizLength = vizArray.length;
-		for (var i = 0; i < vizLength; i++) {
-		    var colorShow = palette[colorArray[i]];
+     /*
+		 d3.bullet().duration( 500);
+		 log('render 2');
+		 log(datastring);
+// run second time to animate
 			
-		    if(vizArray[i]==='m') {
-				$("rect.measure.s"+measure+'-'+qId).css("fill",colorShow);
-				measure++;
-			//    log(i + ' m '+ vizArray[i] + ' - '+colorShow);
-		    }
-		    if(vizArray[i]==='t') {
-				$("line.marker.s"+marker+'-'+qId).css("stroke",colorShow);
-				marker++;
-			   //log(i + ' t '+ vizArray[i] + ' - '+colorShow);
-		    }
-		    if(vizArray[i]==='b') {
-				$("rect.range.s"+range+'-'+qId).css("fill",colorShow);
-				range++;
-			//    log(i + ' b '+ vizArray[i] + ' - '+colorShow);
-		    }
-		}
-		// hide dummy row
-		$("line.marker.s"+marker+'-'+qId).css("display","none");
+			d3.select($element[0]).selectAll("svg").data(datastring).call(chart);
+			log(d3.select($element[0]).selectAll("svg"));
+			*/
+/*			    .enter().append("svg")
+			      .attr("class", "bullet")
+			      .attr("width", width + divMarginLabel + divMarginRight)
+			      .attr("height", height + marginTop + marginBottom)
+			      
+	//		      .attr("width", width + divMarginLabel + divMarginRight)
+	//		      .attr("height", height + marginTop + marginBottom)			
+			    .append("g")
+			      .attr("transform", "translate(" + divMarginLabel + "," + marginTop + ")")
+			     // .transition()
+			      .call(chart);
+*/
+/*
+
+			var title = svg.append("g")
+			      .style("text-anchor", "end")
+			      .attr("transform", "translate(-6," + height / 2 + ")");
+
+			title.append("text")
+			      .attr("class", "title")
+			      //.fontSize('8px')
+			      //.style("font-size", function(d) {	return d.size + "px";
+			      .style("font-size",  disclosureFontSize(elementHeight,minFont,maxFont)+"px" )
+			      .text(function(d) { return d.title; });
+
+			title.append("text")
+			      .attr("class", "subtitle")
+			      .attr("dy", "1em")
+			      .style("font-size",  disclosureFontSize(elementHeight-2,minFont,maxFont)+"px" )
+			      .text(function(d) { return d.subtitle; });
+*/
+// done second ru
+
+			var range = 0;
+			var marker = 0;
+			var measure = 0;
+			var colorShow = '';
+
+			var vizLength = vizArray.length;
+			for (var i = 0; i < vizLength; i++) {
+			    var colorShow = palette[colorArray[i]];
+				
+			    if(vizArray[i]==='m') {
+					$("rect.measure.s"+measure+'-'+qId).css("fill",colorShow);
+					measure++;
+				//    log(i + ' m '+ vizArray[i] + ' - '+colorShow);
+			    }
+			    if(vizArray[i]==='t') {
+					$("line.marker.s"+marker+'-'+qId).css("stroke",colorShow);
+					marker++;
+				   //log(i + ' t '+ vizArray[i] + ' - '+colorShow);
+			    }
+			    if(vizArray[i]==='b') {
+					$("rect.range.s"+range+'-'+qId).css("fill",colorShow);
+					range++;
+				//    log(i + ' b '+ vizArray[i] + ' - '+colorShow);
+			    }
+			}
+			// hide dummy row
+			$("line.marker.s"+marker+'-'+qId).css("display","none");
+			} 
 
 	// disclosure functions 	
 		// adjust title 
@@ -380,7 +445,7 @@ define(["jquery","text!./styles.css","./com-itelligence-bulletchart-d3-propertie
 			};	 
 		 // i use this logging function so its easy to turn logging on or off
 		 function log(obj) {
-//				  console.log(obj);
+				  console.log(obj);
 //				  dump(obj);
 			};
 //
